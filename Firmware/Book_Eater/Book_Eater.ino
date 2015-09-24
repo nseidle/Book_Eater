@@ -57,8 +57,8 @@ const byte presenceSensor = A0;
 const byte ampEnable = A1; //It's open...
 
 //Global variables
-int previousTrack1 = 1; //Used to prevent the playing of sounds twice in a row
-int previousTrack2 = 2;
+int previousTrack1 = 4; //Used to prevent the playing of sounds twice in a row
+int previousTrack2 = 5;
 
 #define SMOOTHING_SIZE 32 //Average the zero readings across some number of readings. 32 is reasonable.
 unsigned int zeroReadings[SMOOTHING_SIZE]; //This tracks the zero reading upon power up
@@ -166,9 +166,15 @@ void playRandomTrack()
   char track_name[13];
   byte trackNumber = previousTrack1;
 
+  //Track 1 (mmmm cookie monster) needs to play more often
   while(trackNumber == previousTrack1 || trackNumber == previousTrack2) //Don't play the same track as the last donation
   {
-    trackNumber = random(1, 8); //(inclusive min, exclusive max)
+    //Pick a random number but more than the available tracks
+    //This is so we can give extra weight to track 1
+    int myNumber = random(1, 8 + 5); //(inclusive min, exclusive max)
+    
+    if(myNumber > 7) trackNumber = 1; //Give a big weight to cookie monster track
+    else trackNumber = myNumber;
   }
 
   sprintf(track_name, "%d.mp3", trackNumber); //Splice the track number into file name
@@ -183,7 +189,6 @@ void playRandomTrack()
   MP3player.playMP3(track_name);
 
   //Update the previous variables
-  previousTrack2 = previousTrack1;
   previousTrack1 = trackNumber;
   
   playerStopped = false; //Boolean for main loop to turn off MP3 IC

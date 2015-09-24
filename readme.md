@@ -1,11 +1,11 @@
 Book Eater
 ==============
 
-Imagine you have returned a book to the library return chute. Naturally, it should play a sound encouraging you to come again.
+Imagine you have dropped a book down the local library's return chute. Naturally, it should play a sound encouraging you to come again.
 
-This project was my wife's idea (and she is the voice in the audio clips).
+Book Eater is my wife's fantastic idea (and she is the voice in the audio clips).
 
-![RedBoard with Audio Amplifier and Sharp IR sensor](https://raw.githubusercontent.com/nseidle/World_Control_Of_SSR/master/SparkFun_Thing_SSR_Setup.jpg "SparkFun RedBoard with amplifier and Sharp IR sensor")
+![RedBoard with Audio Amplifier and Sharp IR sensor](https://raw.githubusercontent.com/nseidle/Book_Eater/master/Book_Eater_Stackup.jpg "SparkFun RedBoard with amplifier and Sharp IR sensor")
 
 The system monitors the IR sensor for a large change (delta). When/if it sees a big change it randomly plays one of 7 MP3s (never playing the same one twice in a row). There is a test routine (press 't') so you can see the output of the analog sensor.
 
@@ -27,9 +27,9 @@ Materials used:
 * [9V Wall Adapter](https://www.sparkfun.com/products/298)
 * I used some heatshrink and wire as well but I'll assume you have this...
 
-To prep the audio amp for external control: cut the small jumper, solder in two 10k PTH resistors, and then the 10k trim pot. This will allow user controllable volume. It is *very* loud and *very* clean with a good speaker and a wall power supply. Powering the MP3 player and audio amp via USB will introduce buzzing; a 9V wall supply should clean it up.
+![Close up of the protoshield with various wires and connectors](https://raw.githubusercontent.com/nseidle/Book_Eater/master/Book_Eater_Closeup.jpg)
 
-![Close up of the protoshield with various wires and connectors](https://raw.githubusercontent.com/nseidle/World_Control_Of_SSR/master/Relay-Control.png)
+To prep the audio amp for external control: cut the small jumper, solder in two 10k PTH resistors, and then the 10k trim pot. This will allow user controllable volume. It is *very* loud and *very* clean with a good speaker and a wall power supply. Powering the MP3 player and audio amp via USB will introduce buzzing; a 9V (or higher) wall supply should clean it up. This is because the higher voltage will allow the onboard linear voltage regulator to regulate down to a nice, clean, 5V.
 
 The RedBoard connects to the MP3 Shield which then stacks the protoshield. The MP3 shield "-" and "R" pins are wired to the "-" and "+" pins of the "In" port of the audio amp. The out pins of the audio amp are connected to the speaker. The audio amp's S or shutdown pin is connected to A1 so that we can shut it down when not playing an MP3.
 
