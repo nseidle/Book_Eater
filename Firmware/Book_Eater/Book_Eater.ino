@@ -40,17 +40,19 @@
 #include <SdFatUtil.h>     // SDFat Util Library
 #include <SFEMP3Shield.h>  // Mp3 Shield Library
 
+#include <avr/wdt.h> //We need watch dog for this program
+
 SdFat sd; // Create object to handle SD functions
 
 SFEMP3Shield MP3player; // Create Mp3 library object
 
-#define MIN_PRESENCE_DELTA 18 //The distance sensor must cross this threshold to active the noise
+//#define MIN_PRESENCE_DELTA 18 //The distance sensor must cross this threshold to active the noise
+#define MIN_PRESENCE_DELTA 30 //The distance sensor must cross this threshold to active the noise
 
 //It gets really jumpy when the sensor is pointed at the air
 //Presence_Minimum is the value we have to be above in order for us to pay attention
 //Less than the min, we throw out the reading
 #define PRESENCE_MINIMUM  54 
-
 
 //Hardware connections
 const byte presenceSensor = A0;
@@ -66,8 +68,15 @@ byte currentReadingSpot = 0;
 
 boolean playerStopped = false; //These are booleans used to control the main loop
 
+unsigned long lastPlay = 0;
+
+#define MIN_TIME_BETWEEN_PLAYS (long)3000
+
 void setup()
 {
+  wdt_reset(); //Pet the dog
+  wdt_disable(); //We don't want the watchdog during init
+
   Serial.begin(57600);
   Serial.println("Bank Eater"); 
 
@@ -85,21 +94,37 @@ void setup()
 
   initSD(); //Initialize the SD card
   initMP3Player(); // Initialize the MP3 Shield
+
+  wdt_reset(); //Pet the dog
+//  wdt_enable(WDTO_250MS); //Unleash the beast - too short
+  wdt_enable(WDTO_1S); //Unleash the beast
+  
+  lastPlay = millis();
 }
 
 void loop()
 {
-  if(checkBook() == true)
+  wdt_reset(); //Pet the dog
+
+  if ((unsigned long)(millis() - lastPlay) >= MIN_TIME_BETWEEN_PLAYS)
   {
-    digitalWrite(ampEnable, HIGH); //Turn on the amplifier!
-
-    playRandomTrack(); //Play sound
-    
-    //Wait for track to finish playing
-    while(MP3player.isPlaying())
-      delay(100);
-
-    digitalWrite(ampEnable, LOW); //Disable the ampifier
+    if(checkBook() == true)
+    {
+      digitalWrite(ampEnable, HIGH); //Turn on the amplifier!
+  
+      playRandomTrack(); //Play sound
+      
+      //Wait for track to finish playing
+      while(MP3player.isPlaying())
+      {
+        wdt_reset(); //Pet the dog
+        delay(100);
+      }
+  
+      digitalWrite(ampEnable, LOW); //Disable the ampifier
+      
+      lastPlay = millis();
+    }
   }
   
   //Check for test mode
@@ -169,12 +194,16 @@ void playRandomTrack()
   //Track 1 (mmmm cookie monster) needs to play more often
   while(trackNumber == previousTrack1 || trackNumber == previousTrack2) //Don't play the same track as the last donation
   {
+    wdt_reset(); //Pet the dog
+
     //Pick a random number but more than the available tracks
     //This is so we can give extra weight to track 1
-    int myNumber = random(1, 8 + 5); //(inclusive min, exclusive max)
+    //int myNumber = random(1, 8 + 5); //(inclusive min, exclusive max)
     
-    if(myNumber > 7) trackNumber = 1; //Give a big weight to cookie monster track
-    else trackNumber = myNumber;
+    //if(myNumber > 7) trackNumber = 1; //Give a big weight to cookie monster track
+    //else trackNumber = myNumber;
+    
+    trackNumber = random(1, 5); //(inclusive min, exclusive max)
   }
 
   sprintf(track_name, "%d.mp3", trackNumber); //Splice the track number into file name
@@ -236,6 +265,8 @@ void testPresenceSensor()
 {
   while(1)
   {
+    wdt_reset(); //Pet the dog
+
     Serial.print("Sensor: ");
     Serial.println(averageAnalogRead(presenceSensor));
     
